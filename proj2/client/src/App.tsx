@@ -13,6 +13,7 @@ import CustomerDashboard from './pages/CustomerDashboard';
 import RestaurantDashboard from './pages/RestaurantDashboard';
 import DeliveryDashboard from './pages/DeliveryDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import VoiceCommandManager from './features/voice/components/VoiceCommandManager';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -69,6 +70,7 @@ function App() {
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </main>
+              <VoiceCommandManager />
             </div>
           </Router>
         </CartProvider>

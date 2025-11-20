@@ -16,7 +16,8 @@
     "bcryptjs": "^2.4.3",
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "axios": "^1.6.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

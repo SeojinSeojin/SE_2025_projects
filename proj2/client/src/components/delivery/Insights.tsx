@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import React, { useMemo, useState } from 'react';
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
 import './Insights.css';
@@ -9,14 +9,25 @@ interface Order {
     id: string;
     totalAmount: number;
     tipAmount: number;
+    deliveryFee?: number;
+    earning?: number;
     status: string;
     createdAt: string;
-    driverAcceptedAt?: string;
+    assignedAt?: string;
     deliveredAt?: string;
     distance?: number;
 }
 
 type TimeRange = 'daily' | 'weekly' | 'monthly';
+
+const getOrderEarning = (order: Order): number => {
+    const deliveryFee = typeof order.deliveryFee === 'number' ? order.deliveryFee : 0;
+    const tipAmount = typeof order.tipAmount === 'number' ? order.tipAmount : 0;
+    if (typeof order.earning === 'number') {
+        return order.earning;
+    }
+    return deliveryFee + tipAmount;
+};
 
 const Insights: React.FC = () => {
     const { user } = useAuth();
@@ -45,7 +56,7 @@ const Insights: React.FC = () => {
         // Helper to get start of week (Sunday)
         const getStartOfWeek = (d: Date) => {
             const date = new Date(d);
-            const day = date.getDay();
+            const day = date.getDay() === 0 ? 7 : date.getDay();
             const diff = date.getDate() - day;
             return new Date(date.setDate(diff));
         };
@@ -67,8 +78,17 @@ const Insights: React.FC = () => {
                 const d = new Date(o.deliveredAt || o.createdAt);
                 return d >= start && d < end;
             });
-            const earnings = periodOrders.reduce((sum, o) => sum + (o.totalAmount), 0); // Assuming total amount is earnings for simplicity
-            return { earnings, count: periodOrders.length };
+
+            const totals = periodOrders.reduce((acc, order) => {
+                const deliveryFee = typeof order.deliveryFee === 'number' ? order.deliveryFee : 0;
+                const tipAmount = typeof order.tipAmount === 'number' ? order.tipAmount : 0;
+                acc.deliveryFees += deliveryFee;
+                acc.tips += tipAmount;
+                acc.earnings += getOrderEarning(order);
+                return acc;
+            }, { earnings: 0, deliveryFees: 0, tips: 0 });
+
+            return { ...totals, count: periodOrders.length };
         };
 
         // Current Range Stats
@@ -95,9 +115,9 @@ const Insights: React.FC = () => {
 
         // 2. Average Delivery Time
         const deliveryTimes = deliveredOrders
-            .filter(o => o.driverAcceptedAt && o.deliveredAt)
+            .filter(o => o.assignedAt && o.deliveredAt)
             .map(o => {
-                const start = new Date(o.driverAcceptedAt!).getTime();
+                const start = new Date(o.assignedAt!).getTime();
                 const end = new Date(o.deliveredAt!).getTime();
                 return (end - start) / 60000;
             });
@@ -122,7 +142,7 @@ const Insights: React.FC = () => {
             const curr = hoursMap.get(hour);
 
             if (curr) {
-                curr.earnings += o.totalAmount;
+                curr.earnings += getOrderEarning(o);
                 curr.count += 1;
             }
         });
@@ -188,6 +208,10 @@ const Insights: React.FC = () => {
                             {metrics.earningsChange > 0 ? '↑' : '↓'} {Math.abs(metrics.earningsChange).toFixed(1)}%
                         </span>
                         <span> vs previous {earningsRange.replace('ly', '')}</span>
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#7f8c8d' }}>
+                        <span>Delivery Fees: ${metrics.currentStats.deliveryFees.toFixed(2)}</span>
+                        <span style={{ marginLeft: '12px' }}>Tips: ${metrics.currentStats.tips.toFixed(2)}</span>
                     </div>
                     <div style={{ marginTop: '10px', fontSize: '0.9rem', color: '#7f8c8d' }}>
                         {metrics.currentStats.count} orders delivered

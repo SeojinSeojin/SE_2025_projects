@@ -57,9 +57,12 @@ const DeliveryHome: React.FC = () => {
     ['delivered'].includes(order.status)
   );
 
-  const totalEarnings = completedOrders.reduce((total: number, order: any) => 
-    total + (order.totalAmount * 0.1), 0
-  );
+  const totalEarnings = completedOrders.reduce((total: number, order: any) => {
+    const deliveryFee = typeof order.deliveryFee === 'number' ? order.deliveryFee : 0;
+    const tipAmount = typeof order.tipAmount === 'number' ? order.tipAmount : 0;
+    const earning = typeof order.earning === 'number' ? order.earning : deliveryFee + tipAmount;
+    return total + earning;
+  }, 0);
 
   // Check if rider has any active orders (ready or out_for_delivery)
   const hasActiveOrders = assignedOrders.some((order: any) => 

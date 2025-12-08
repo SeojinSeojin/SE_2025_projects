@@ -128,7 +128,7 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .order-info h4 {
@@ -212,6 +212,12 @@
   color: white;
 }
 
+.manual-address-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 @media (max-width: 768px) {
   .quick-actions {
     grid-template-columns: 1fr;
@@ -226,4 +232,11 @@
     gap: 15px;
     text-align: center;
   }
+}
+
+.user-location-header,
+.address-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }

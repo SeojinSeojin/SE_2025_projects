@@ -101,11 +101,7 @@
 }
 
 .order-total {
-  margin-bottom: 15px;
-  padding: 10px;
   background: white;
-  border-radius: 5px;
-  border: 1px solid #e0e0e0;
 }
 
 .order-total strong {
@@ -115,10 +111,9 @@
 
 .delivery-address {
   margin-bottom: 15px;
-  padding: 10px;
   background: white;
   border-radius: 5px;
-  border: 1px solid #e0e0e0;
+  /* border: 1px solid #e0e0e0; */
 }
 
 .delivery-address h4 {

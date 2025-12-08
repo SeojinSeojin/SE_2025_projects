@@ -47,7 +47,7 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .order-info h4 {

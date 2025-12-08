@@ -262,7 +262,7 @@ const CustomerHome: React.FC = () => {
         </Link>
       </div>
       
-      <div className="manual-address-inputs">
+      <div className="manual-address-inputs form-group">
         <input
           type="text"
           placeholder="Street"
@@ -331,19 +331,19 @@ const CustomerHome: React.FC = () => {
 
       {/* 地址區塊 + 開啟地圖按鈕 */}
       <section className="user-location-section">
+        <span>
+          📍 Current address:{" "}
+          {user.profile?.address?.fullAddress ||
+            "No address set. Click the button to set one."}
+        </span>
         <div className="user-location-header">
-          <span>
-            📍 Current address:{" "}
-            {user.profile?.address?.fullAddress ||
-              "No address set. Click the button to set one."}
-          </span>
+          <button className="btn btn-secondary" onClick={handleUseMyLocation}>
+              Use My Location
+          </button>
           <button
             className="btn btn-secondary"
             onClick={() => setShowLocationPicker((prev) => !prev)}
           >
-            <button className="btn btn-secondary" onClick={handleUseMyLocation}>
-              Use My Location
-            </button>
             {showLocationPicker
               ? "Close map"
               : user.profile?.address?.fullAddress

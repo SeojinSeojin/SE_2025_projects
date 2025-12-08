@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useCart } from '../../contexts/CartContext';
-import { useAuth } from '../../contexts/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useCart } from '../../contexts/CartContext';
 import { api } from '../../services/api';
 import './Cart.css';
 
@@ -226,7 +226,7 @@ const Cart: React.FC = () => {
       {/* Tip Input Section */}
       <div className="tip-section">
         <h3>Add Tip for Delivery Partner</h3>
-        <div className="tip-input-controls">
+        <div className="tip-input-controls form-group">
           <label htmlFor="tip-amount">Tip Amount ($):</label>
           <input
             id="tip-amount"

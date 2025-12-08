@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import React, { useMemo, useState } from 'react';
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
 import './Insights.css';
@@ -86,6 +86,7 @@ const Insights: React.FC = () => {
         const totalOrders = orders.length;
         const cancellationRatio = totalOrders ? (cancelledOrders / totalOrders) * 100 : 0;
 
+        console.log(orders)
         // 4. Kitchen Prep Time Gauge
         const prepTimes = orders
             .filter(order => order.confirmedAt && order.readyAt)
@@ -94,6 +95,7 @@ const Insights: React.FC = () => {
                 const ready = new Date(order.readyAt!).getTime();
                 return (ready - confirmed) / 60000; // in minutes
             });
+        console.log(prepTimes)
 
         const avgPrepTime = prepTimes.length
             ? prepTimes.reduce((a, b) => a + b, 0) / prepTimes.length

@@ -1,5 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
 import './OrderManagement.css';
@@ -16,14 +16,24 @@ interface Order {
   }>;
   totalAmount: number;
   tipAmount: number;
+  deliveryFee?: number;
+  earning?: number;
   deliveryAddress: any;
   status: string;
   assignedAt: Date;
-  pickedUpAt?: Date;
   deliveredAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const getOrderEarning = (order: Order): number => {
+  const deliveryFee = typeof order.deliveryFee === 'number' ? order.deliveryFee : 0;
+  const tipAmount = typeof order.tipAmount === 'number' ? order.tipAmount : 0;
+  if (typeof order.earning === 'number') {
+    return order.earning;
+  }
+  return deliveryFee + tipAmount;
+};
 
 const OrderManagement: React.FC = () => {
   const { user } = useAuth();
@@ -198,7 +208,7 @@ const OrderManagement: React.FC = () => {
                 </div>
 
                 <div className="order-items">
-                  <h4>Items:</h4>
+                  <h4>Items (${order.totalAmount.toFixed(2)}):</h4>
                   <ul>
                     {order.items.map((item: any, index: number) => (
                       <li key={index}>
@@ -208,9 +218,12 @@ const OrderManagement: React.FC = () => {
                   </ul>
                 </div>
 
-                <div className="order-total">
-                  <strong>Total: ${order.totalAmount.toFixed(2)}</strong>
-                </div>
+                {/* ADD TIP DISPLAY */}
+                {order.tipAmount > 0 && (
+                  <div className="order-tip">
+                    <p><strong>Delivery Tip:</strong> ${order.tipAmount.toFixed(2)}</p>
+                  </div>
+                )}
 
                 <div className="order-actions">
                   <button
@@ -251,7 +264,7 @@ const OrderManagement: React.FC = () => {
                 </div>
 
                 <div className="order-items">
-                  <h4>Items:</h4>
+                  <h4>Items (${order.totalAmount.toFixed(2)}):</h4>
                   <ul>
                     {order.items.map((item, index) => (
                       <li key={index}>
@@ -259,10 +272,6 @@ const OrderManagement: React.FC = () => {
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                <div className="order-total">
-                  <strong>Total: ${order.totalAmount.toFixed(2)}</strong>
                 </div>
 
                 {/* ADD TIP DISPLAY */}
@@ -315,7 +324,7 @@ const OrderManagement: React.FC = () => {
                 </div>
 
                 <div className="order-items">
-                  <h4>Items:</h4>
+                  <h4>Items (${order.totalAmount.toFixed(2)}):</h4>
                   <ul>
                     {order.items.map((item, index) => (
                       <li key={index}>
@@ -323,10 +332,6 @@ const OrderManagement: React.FC = () => {
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                <div className="order-total">
-                  <strong>Total: ${order.totalAmount.toFixed(2)}</strong>
                 </div>
 
                 <div className="delivery-address">
@@ -343,8 +348,8 @@ const OrderManagement: React.FC = () => {
                   {/* UPDATE EARNINGS CALCULATION */}
                   <p>
                     <strong>Earnings:</strong> $
-                    {((order.totalAmount * 0.1) + (order.tipAmount || 0)).toFixed(2)}
-                    (10% commission + Tip)
+                    {getOrderEarning(order).toFixed(2)}
+                    (Tip)
                   </p>
                 </div>
               </div>

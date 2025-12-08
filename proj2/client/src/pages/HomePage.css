@@ -68,14 +68,12 @@
 }
 
 .btn-secondary {
-  background: transparent;
+  background: #667eea;
   color: white;
-  border: 2px solid white;
 }
 
 .btn-secondary:hover {
-  background: white;
-  color: #667eea;
+  background: #4661d7;
 }
 
 .btn-large {

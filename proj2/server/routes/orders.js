@@ -36,7 +36,8 @@ router.post('/', [
   body('totalAmount').isNumeric(),
   body('deliveryAddress').isObject(),
   body('customerId').notEmpty(),
-  body('tipAmount').optional().isNumeric()
+  body('tipAmount').optional().isNumeric(),
+  body('deliveryFee').optional().isNumeric()
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -45,7 +46,10 @@ router.post('/', [
     }
 
     // const { restaurantId, items, totalAmount, deliveryAddress, customerId } = req.body;
-    const { restaurantId, items, totalAmount, deliveryAddress, customerId, tipAmount } = req.body;
+    const { restaurantId, items, totalAmount, deliveryAddress, customerId, tipAmount, deliveryFee } = req.body;
+
+    const normalizedTip = Number(tipAmount) || 0;
+    const normalizedDeliveryFee = Number(deliveryFee) || 0;
 
     // Create order in Firebase
     const orderRef = db.collection('orders').doc();
@@ -55,7 +59,8 @@ router.post('/', [
       restaurantId,
       items,
       totalAmount,
-      tipAmount: tipAmount || 0,
+      tipAmount: normalizedTip,
+      deliveryFee: normalizedDeliveryFee,
       deliveryAddress,
       status: 'pending',
       createdAt: new Date(),
@@ -93,7 +98,8 @@ router.get('/customer', async (req, res) => {
       id: doc.id,
       ...doc.data(),
       createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-      updatedAt: doc.data().updatedAt?.toDate?.() || new Date()
+      updatedAt: doc.data().updatedAt?.toDate?.() || new Date(),
+      deliveredAt: doc.data().deliveredAt?.toDate?.() || (doc.data().deliveredAt ? new Date(doc.data().deliveredAt) : null),
     }));
 
     res.json({ orders });
@@ -188,9 +194,12 @@ router.put('/:id/status', [
 
     // Update order status in Firebase
     const orderRef = db.collection('orders').doc(id);
+    const timestamp = new Date()
+    
     await orderRef.update({
       status: status,
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      ...(status === 'preparing' ? { confirmedAt: timestamp } : status === 'ready'? { readyAt: timestamp }:{}),
     });
 
     // When order is marked as ready, it becomes available for riders to accept

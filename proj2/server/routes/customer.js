@@ -219,7 +219,7 @@ router.get("/restaurants-by-distance", async (req, res) => {
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // 5. 計算每家餐廳距離
+    // 5. 計算每家餐廳距離 + rating
     for (const doc of restaurantsSnapshot.docs) {
       const data = doc.data();
 
@@ -231,21 +231,63 @@ router.get("/restaurants-by-distance", async (req, res) => {
       const distanceKm = haversineDistance(userLat, userLng, restLat, restLng);
       const distanceMiles = distanceKm * 0.621371;
 
+      // 計算平均 rating（從 orders 裡面的 customer rating）
+      let averageRating = null;
+      try {
+        const ordersSnapshot = await db
+          .collection("orders")
+          .where("restaurantId", "==", doc.id)
+          .where("status", "==", "delivered")
+          .get();
+
+        let totalRating = 0;
+        let ratingCount = 0;
+
+        ordersSnapshot.forEach((orderDoc) => {
+          const orderData = orderDoc.data();
+          if (
+            orderData.ratings &&
+            orderData.ratings.customer &&
+            typeof orderData.ratings.customer.rating === "number"
+          ) {
+            totalRating += orderData.ratings.customer.rating;
+            ratingCount++;
+          }
+        });
+
+        if (ratingCount > 0) {
+          averageRating = Math.round((totalRating / ratingCount) * 10) / 10; // 1 decimal place
+        }
+      } catch (ratingError) {
+        console.error("Error calculating rating for restaurant", doc.id, ratingError);
+        averageRating = null;
+      }
+
+      // fallback to profile.rating if no orders-based rating found
+      const finalRating =
+        averageRating !== null
+          ? averageRating
+          : typeof data.profile?.rating === "number"
+          ? data.profile.rating
+          : 0;
+
       // for debug
       console.log("🔥 [DEBUG] restaurant raw data:", data);
       console.log("🔥 [DEBUG] computed distance (Miles):", distanceMiles);
+      console.log("🔥 [DEBUG] computed rating:", finalRating);
 
       restaurants.push({
         id: doc.id,
         name: data.profile?.name,
         cuisine: data.profile?.cuisine,
         description: data.profile?.description,
-        rating: data.profile?.rating || 0,
+        rating: finalRating,
         address: data.profile?.address,
         location: data.location,
         distanceKm: Number(distanceKm.toFixed(2)),
         distanceMiles: Number(distanceMiles.toFixed(2)),
       });
+      console.log("🔥 [DEBUG] pushed restaurant:", data.profile?.name);
     }
 
     // 6. 按距離排序

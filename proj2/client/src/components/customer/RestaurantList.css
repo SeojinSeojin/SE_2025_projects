@@ -123,7 +123,8 @@
 }
 
 .menu-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 180px;
   justify-content: space-between;
   align-items: center;
   padding: 20px;

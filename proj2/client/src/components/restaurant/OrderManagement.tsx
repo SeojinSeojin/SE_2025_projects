@@ -1,5 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
 import './OrderManagement.css';
@@ -25,6 +25,7 @@ interface Order {
       ratedAt?: Date;
     };
   };
+  tipAmount?: number;
 }
 
 const OrderManagement: React.FC = () => {
@@ -175,6 +176,7 @@ const OrderManagement: React.FC = () => {
 
                 <div className="order-total">
                   <strong>Total: ${order.totalAmount.toFixed(2)}</strong>
+                  {order.tipAmount && <div>(+Tip: ${order.tipAmount?.toFixed(2)})</div>}
                 </div>
 
                 <div className="order-actions">

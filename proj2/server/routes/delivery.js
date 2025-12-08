@@ -50,15 +50,30 @@ router.get('/orders', async (req, res) => {
 
     const orders = ordersSnapshot.docs.map(doc => {
       const data = doc.data();
+      const createdAt = data.createdAt?.toDate?.() || new Date(data.createdAt);
+      const updatedAt = data.updatedAt?.toDate?.() || new Date(data.updatedAt);
+      const assignedAt = data.assignedAt?.toDate?.() || (data.assignedAt ? new Date(data.assignedAt) : null);
+      const pickedUpAt = data.pickedUpAt?.toDate?.() || (data.pickedUpAt ? new Date(data.pickedUpAt) : null);
+      const deliveredAt = data.deliveredAt?.toDate?.() || (data.deliveredAt ? new Date(data.deliveredAt) : null);
+      const confirmedAt = data.confirmedAt?.toDate?.() || (data.confirmedAt ? new Date(data.confirmedAt) : null);
+      const readyAt = data.readyAt?.toDate?.() || (data.readyAt ? new Date(data.readyAt) : null);
+      const deliveryFee = Number(data.deliveryFee) || 0;
+      const tipAmount = Number(data.tipAmount) || 0;
+      const earning = deliveryFee + tipAmount;
+
       return {
         id: doc.id,
         ...data,
-        createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt),
-        updatedAt: data.updatedAt?.toDate?.() || new Date(data.updatedAt),
-        driverAcceptedAt: data.driverAcceptedAt?.toDate?.() || (data.driverAcceptedAt ? new Date(data.driverAcceptedAt) : null),
-        deliveredAt: data.deliveredAt?.toDate?.() || (data.deliveredAt ? new Date(data.deliveredAt) : null),
-        confirmedAt: data.confirmedAt?.toDate?.() || (data.confirmedAt ? new Date(data.confirmedAt) : null),
-        readyAt: data.readyAt?.toDate?.() || (data.readyAt ? new Date(data.readyAt) : null),
+        deliveryFee,
+        tipAmount,
+        earning,
+        createdAt,
+        updatedAt,
+        assignedAt,
+        pickedUpAt,
+        deliveredAt,
+        confirmedAt,
+        readyAt,
       };
     });
 
@@ -222,11 +237,11 @@ router.post('/deliver/:orderId', async (req, res) => {
 
     const orderData = orderDoc.data();
     const orderTotal = orderData.totalAmount || 0; // The total paid by the customer
-    const tipAmount = orderData.tipAmount || 0; // <--- GET THE TIP AMOUNT
+    const deliveryFee = Number(orderData.deliveryFee) || 0;
+    const tipAmount = Number(orderData.tipAmount) || 0;
 
-    // 1. Calculate rider commission (e.g., 10% of total amount + 100% of tip)
-    const baseCommission = orderTotal * 0.10;
-    const riderPayout = baseCommission + tipAmount; // <--- CALCULATE TOTAL PAYOUT
+    // Delivery partner earning is delivery fee + full tip
+    const earning = deliveryFee + tipAmount;
 
     // 2. Update order status
     const orderRef = db.collection('orders').doc(orderId);
@@ -250,7 +265,7 @@ router.post('/deliver/:orderId', async (req, res) => {
     // 4. CREDIT RIDER EARNINGS WITH COMMISSION AND TIP
     const rider = await User.findById(riderId);
     if (rider) {
-      await rider.updateEarnings(riderPayout); // <--- CREDIT RIDER
+      await rider.updateEarnings(earning); // <--- CREDIT RIDER
 
       // Check if rider has other active orders before setting to free
       const activeOrdersSnapshot = await db.collection('orders')
@@ -270,7 +285,9 @@ router.post('/deliver/:orderId', async (req, res) => {
       message: 'Order delivered successfully',
       orderId: orderId,
       status: 'delivered',
-      payout: riderPayout // Optional: send payout amount in response
+      earning,
+      deliveryFee,
+      tipAmount
     });
   } catch (error) {
     console.error('Deliver order error:', error);

@@ -139,8 +139,9 @@ MIT License - see LICENSE file for details
 
 ### 🔗 Live Demo
 You can see the working demo using the link below:  
-[View Live Demo](https://drive.google.com/file/d/1R85vYgjbKL3zBZsimE7ruI46UfgAdN8x/view?usp=drive_link)
+[View Live Demo for Project 2](https://drive.google.com/file/d/1R85vYgjbKL3zBZsimE7ruI46UfgAdN8x/view?usp=drive_link)
 
+[View Live demo for Project 3](https://youtu.be/l6SIhW_ra_A)
 
 ---
 

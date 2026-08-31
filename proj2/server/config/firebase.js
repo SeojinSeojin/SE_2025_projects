@@ -14,11 +14,19 @@ const serviceAccount = {
 };
 
 // Initialize Firebase Admin
+// When FIRESTORE_EMULATOR_HOST is set, skip service-account credentials —
+// the Admin SDK connects to the local emulator with just a project id.
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    projectId: process.env.FIREBASE_PROJECT_ID,
-  });
+  if (process.env.FIRESTORE_EMULATOR_HOST) {
+    admin.initializeApp({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+    });
+  } else {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: process.env.FIREBASE_PROJECT_ID,
+    });
+  }
 }
 
 const db = admin.firestore();
